@@ -1,163 +1,249 @@
-// Including all header files
-#include<iostream>
-#include<conio.h>
-#include<fstream>
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 
-//Global variables
-string fname,lname,phone_num;
+class contact
+{
+private:
+    char fName[50], lName[50], address[50], email[50];
+    long long phNo;
 
-//Functions.
-void addContact();
-void searchContact();
-void help();
-void self_exit();
-bool check_digits(string);
-bool check_numbers(string);
+public:
+    void createContact()
+    {
+        cout << "Enter your first name: ";
+        cin >> fName;
+        cout << "Enter your last name: ";
+        cin >> lName;
+        cout << "Enter phone: ";
+        cin >> phNo;
+        cout << "Enter address: ";
+        cin >> address;
+        cout << "Enter email: ";
+        cin >> email;
+    }
+
+    void showContact()
+    {
+        cout << "Name: " << fName << " " << lName << endl;
+        cout << "Phone: " << phNo << endl;
+        cout << "Address: " << address << endl;
+        cout << "Email: " << email << endl;
+    }
+
+    void writeOnFile()
+    {
+        char ch;
+        ofstream f1;
+        f1.open("CMS.dat", ios::binary | ios::app);
+
+        do
+        {
+            createContact();
+            f1.write(reinterpret_cast<char *>(this), sizeof(*this));
+            cout << "Do you have next data?(y/n)";
+            cin >> ch;
+        } while (ch == 'y');
+
+        cout << "Contact has been Sucessfully Created...";
+        f1.close();
+    }
+
+    void readFromFile()
+    {
+        ifstream f2;
+        f2.open("CMS.dat", ios::binary);
+
+        cout << "\n================================\n";
+        cout << "LIST OF CONTACTS";
+        cout << "\n================================\n";
+
+        while (!f2.eof())
+        {
+            if (f2.read(reinterpret_cast<char *>(this), sizeof(*this)))
+            {
+                showContact();
+                cout << "\n================================\n";
+            }
+        }
+        f2.close();
+    }
+
+    void searchOnFile()
+    {
+        ifstream f3;
+        char Name[50];
+        cout << "Enter the Name: ";
+        cin >> Name;
+        f3.open("CMS.dat", ios::binary);
+
+        while (!f3.eof())
+        {
+            if (f3.read(reinterpret_cast<char *>(this), sizeof(*this)))
+            {
+                if (Name == fName || Name== lName)
+                {
+                    showContact();
+                    return;
+                }
+            }
+        }
+
+        
+        cout << "\n\n No record not found";
+        f3.close();
+    }
+
+    void deleteFromFile()
+    {
+        char Fname[50];
+        int flag = 0;
+        ofstream f4;
+        ifstream f5;
+
+        f5.open("CMS.dat", ios::binary);
+        f4.open("temp.dat", ios::binary);
+
+        cout << "Enter the Name: ";
+        cin >> Fname;
+
+        while (!f5.eof())
+        {
+            if (f5.read(reinterpret_cast<char *>(this), sizeof(*this)))
+            {
+                if (fName != Fname)
+                {
+                    f4.write(reinterpret_cast<char *>(this), sizeof(*this));
+                }
+                else
+                flag = 1;
+            }
+        }
+        f5.close();
+        f4.close();
+        remove("CMS.dat");
+        rename("temp.dat", "CMS.dat");
+
+        flag == 1;
+        cout<<"\tContact Deleted...";
+        cout<<"\tContact Not found...";
+    }
+
+    void editContact()
+    {
+        char Fname[50];
+        fstream f6;
+
+        cout << "Edit contact";
+        cout << "\n===============================\n\n";
+        cout << "Enter the Name: ";
+        cin >> Fname;
+
+        f6.open("CMS.dat", ios::binary | ios::out | ios::in);
+
+        while (!f6.eof())
+        {
+            if (f6.read(reinterpret_cast<char *>(this), sizeof(*this)))
+            {
+                if (fName==Fname)
+                {
+                    cout << "Enter new record\n";
+                    createContact();
+                    int pos = -1 * sizeof(*this);
+                    f6.seekp(pos, ios::cur);
+                    f6.write(reinterpret_cast<char *>(this), sizeof(*this));
+                    cout<<endl<<endl<<"Contact sucessfully Updated...";
+                    return;
+                }
+            }
+        }
+        cout << "\n\n No record not found";
+        f6.close();
+    }
+};
 
 int main()
 {
-    short int choice;
     system("cls");
-    system("color 0A");
+    system("Color 3F"); 
 
-    cout<< "\n\n\n\t\tContact Management";
-    cout<< "\n\n\t1.Add Contact\n\t2.Search Contact\n\t3.Help\n\t4.Exit\n\t> ";
+    cout << "\n\n\n\n\n\n\n\n\t\t\t * WELCOME TO CONTACT MANAGEMENT SYSTEM *";
 
-    cin>>choice;
-
-    switch(choice)
+    while (1)
     {
-        case 1: 
-            addContact();
+        contact c1;
+        int choice;
+
+        system("cls");
+        system("Color 03");
+
+        cout << "\nCONTACT MANAGEMENT SYSTEM";
+        cout << "\n\nMAIN MENU";
+        cout << "\n=====================\n";
+        cout << "[1] Add a new Contact\n";
+        cout << "[2] List all Contacts\n";
+        cout << "[3] Search for contact\n";
+        cout << "[4] Delete a Contact\n";
+        cout << "[5] Edit a Contact\n";
+        cout << "[0] Exit";
+        cout << "\n=====================\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            system("cls");
+            c1.writeOnFile();
             break;
 
         case 2:
-            searchContact();
+            system("cls");
+            c1.readFromFile();
             break;
-        
+
         case 3:
-            help();
+            system("cls");
+            c1.searchOnFile();
             break;
 
         case 4:
-            self_exit();
+            system("cls");
+            c1.deleteFromFile();
+            break;
+
+        case 5:
+            system("cls");
+            c1.editContact();
+            break;
+
+        case 0:
+            system("cls");
+            cout << "\n\n\n\t\t\tThank you for using CMS." << endl<< endl;
+            exit(0);
             break;
 
         default:
-            cout<< "\n\n\tInvalid Input !";
-            cout<< "\n\tPress Any key To Continue..";
-            getch();
-            main();
-
-    }
-    return 0;
-
-}
-
-void self_exit()
-{
-    system("cls");
-    cout<< "\n\n\n\t\tThank You For Using !";
-    exit(1);
-}
-
-void help()
-{
-    cout<< "This displays help";
-}
-
-void addContact()
-{
-    ofstream phone("number.txt", ios::app);
-
-    system("cls");
-    cout<< "\n\n\tEnter First Name : ";
-    cin>> fname;
-    cout<< "\n\tEnter Last Name : ";
-    cin>>lname;
-    cout<< "\n\tEnter the 10-Digit Phone Number : ";
-    cin>>phone_num;
-
-    if(check_digits(phone_num) == true)
-    {
-        if(check_numbers(phone_num) == true)
-        {
-            if(phone.is_open())
-            {
-                phone << fname <<" " << lname << " " << phone_num << endl;
-                cout<< "\n\tContact Saved Sucessfully !"<<endl;
-            }
-            else{
-                cout<< "\n\t Error Opening File !";
-            }
+            continue;
         }
-        else {
-            cout<< "\n\tA Phone Number Must Contain Numbers Only !";
-        }
-    }
-    else{
-        cout<< "\n\tA Phone Number Must Contain 10-Digits.";
-    }
 
-    phone.close();
-}
+        int opt;
+        cout << "\n\n..::Enter the Choice:\n[1] Main Menu\t\t[0] Exit\n";
+        cin >> opt;
 
-void searchContact()
-{
-    bool found = false;
-    ifstream myfile("number.txt");
-    string keyword;
-    cout<< "\n\tEnter Name To Search : ";
-    cin>>keyword;
-    while (myfile >> fname >> lname >> phone_num)
-    {
-        if(keyword == fname || keyword == lname)
+        switch (opt)
         {
+        case 0:
             system("cls");
-            cout<< "\n\n\t\tContact Details..";
-            cout<< "\n\n\tFirst Name : "<<fname;
-            cout<< "\n\tLast Name : "<<lname;
-            cout<< "\n\tPhone Number : "<<phone_num<<endl;
-            found=true;
+            cout << "\n\n\n\t\t\tThank you for using Our System !!" << endl<< endl;
+            exit(0);
             break;
+
+        default:
+            continue;
         }
-        
     }
 
-    if(found == false)
-    {
-        cout<<"\n\tNo Such Contact Found";
-    }
-    
-}
-
-bool check_digits(string x)
-{
-    if(x.length() ==10 )
-    return true;
-    else
-    return false;
-}
-
-bool check_numbers(string x)
-{
-    bool check = true;
-
-
-    for(int i=0; i<x.length(); i++)
-    {
-        if(!(int (x[i]) >= 48 && int(x[i])<=57))
-        {
-            check = false;
-            break;
-        }
-        
-    }
-
-    if(check==true)
-    return true;
-    if(check==false)
-    return false;
-
+    return 0;
 }
